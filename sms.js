@@ -7,6 +7,7 @@ import { db, auth } from './firebase.js';
 const PROVIDERS = {
     "herosms": { name: "HER", url: "https://hero.camarugulam.workers.dev", currency: "USD", minPrice: 0, maxPrice: 1500 },
     "smscode": { name: "COD", url: "https://code.camarugulam.workers.dev", currency: "IDR", minPrice: 0, maxPrice: 1500 },
+    "smsvirt": { name: "COD", url: "https://svco.camarugulam.workers.dev", currency: "IDR", minPrice: 0, maxPrice: 1500 },
     "otpcepat": { name: "CEP", url: "https://ocepat.camarugulam.workers.dev", currency: "IDR", minPrice: 0, maxPrice: 1500 },
 };
 
