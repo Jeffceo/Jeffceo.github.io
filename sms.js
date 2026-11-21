@@ -5,9 +5,9 @@ import { db, auth } from './firebase.js';
 // 1. KONFIGURASI PROVIDER & HARGA SPESIFIK
 // ==========================================
 const PROVIDERS = {
-    "herosms": { name: "HER", url: "https://hero.camarugulam.workers.dev", currency: "USD", minPrice: 0, maxPrice: 1500 },
+    "herosms": { name: "HER", url: "https://hero.camarugulam.workers.dev", currency: "USD", minPrice: 0, maxPrice: 15000 },
     "smscode": { name: "COD", url: "https://code.camarugulam.workers.dev", currency: "IDR", minPrice: 0, maxPrice: 1500 },
-    "smsvirt": { name: "SVC", url: "https://svco.camarugulam.workers.dev", currency: "IDR", minPrice: 0, maxPrice: 1500 },
+    "smsvirt": { name: "SVC", url: "https://svco.camarugulam.workers.dev", currency: "USD", minPrice: 0, maxPrice: 15000 },
     "otpcepat": { name: "CEP", url: "https://ocepat.camarugulam.workers.dev", currency: "IDR", minPrice: 0, maxPrice: 1500 },
 };
 
@@ -144,7 +144,7 @@ export function updateCountryDropdown() {
     let html = '';
     let allowed = ['ID'];
     
-    if (activeProviderKey === 'smscode') {
+    if (activeProviderKey === 'smscode' || activeProviderKey === 'smsvirt') {
         html += `<option value="ID">🇮🇩 ID</option>`;
         html += `<option value="PH">🇵🇭 PH</option>`;
         allowed.push('PH');
@@ -447,7 +447,7 @@ async function loadSmsPrices() {
         }).forEach(i => {
              normalizedPrices.push({ pid: i.id, price: i.price, opCode: i.injected_operator_id || 'any', opName: cleanOpName(i.operator) });
         });
-    } else if (activeProviderKey === "herosms" || activeProviderKey === "hwa") {
+    } else if (activeProviderKey === "herosms" || activeProviderKey === "hwa" || activeProviderKey === "smsvirt") {
         json.data.filter(i => { let idr = parseFloat(i.price) * currentUsdRate; return idr >= cMin && idr <= cMax; }).forEach(i => {
              normalizedPrices.push({ pid: i.id, price: i.price, opCode: 'any', opName: 'ANY (ACAK)' });
              if (i.operatorStock) {
@@ -525,7 +525,7 @@ window.openProviderMenu = openProviderMenu;
 function createCardHTML(oId, phone, priceDisplay, resendState, cancelState, replaceState, otpDisplay, isDone = false, isRecycled = false, expireTime = 0, operatorName = "UNKNOWN", isHidden = false) {
     const doneStyle = isDone ? 'style="background:#e6f4ea; color:var(--fb-green); border-color:var(--fb-green);"' : 'disabled';
     
-    let bColor = activeProviderKey === "herosms" ? "#8e44ad" : activeProviderKey === "smscode" ? "#95a5a6" : activeProviderKey === "smsbower" ? "#ff7b00" : "#007bff"; 
+    let bColor = activeProviderKey === "herosms" ? "#8e44ad" : activeProviderKey === "smscode" ? "#95a5a6" : activeProviderKey === "smsvirt" ? "#007bff" : "#ff7b00"; 
     
     const phoneColorStyle = isRecycled ? 'color: var(--fb-red);' : '';
     const recycledBadge = isRecycled ? `<span style="font-size:9px; color:#fff; background:var(--fb-red); padding:2px 5px; border-radius:4px; margin-left:8px;">DAUR ULANG</span>` : '';
@@ -614,7 +614,6 @@ export async function executeBuySms(pid, price, name, operator, countryRank = ""
     const pText = formatDisplayPrice(price, PROVIDERS[activeProviderKey].currency);
     if(!await showModal("Konfirmasi", `Beli nomor untuk ${name.toUpperCase()} seharga ${pText.replace(/<[^>]*>?/gm, '')}?`, "confirm")) return;
 
-    // HANYA SMSCODE YANG MENGGUNAKAN NAMA TAMPILAN, PROVIDER LAIN (TERMASUK SMSBOWER) MENGGUNAKAN KODE SPESIFIK
     let payload = (activeProviderKey === "smscode") ? 
         { type: "product", product_id: parseInt(pid), price: Number(price), operator: name } : 
         { product_id: String(pid), price: price, operator: operator };
@@ -835,7 +834,7 @@ export async function actSms(action, id) {
             });
         }
         
-        if (activeProviderKey === 'herosms' || activeProviderKey === 'smscode') {
+        if (activeProviderKey === 'herosms' || activeProviderKey === 'smscode' || activeProviderKey === 'smsvirt') {
             return; 
         }
     }
